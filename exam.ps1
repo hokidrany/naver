@@ -1,5 +1,6 @@
 clear
 $PSScriptRoot
+
 Select-String -Pattern "Test" -Path .\exam.ps1
 $PSCulture
 Get-Culture
