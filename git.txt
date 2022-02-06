@@ -1,0 +1,36 @@
+[git] Git에서 폴더 구조로 수정 및 추가 된 파일 만 내보내기
+특정 커밋에서 수정 및 추가 된 파일 목록을 가져 와서 내보내고 파일 구조로 패키지를 생성하고 싶습니다.
+
+git diff-tree -r --no-commit-id --name-only --diff-filter=ACMRT $commit_id
+git diff-tree -r $commit_id:
+
+주어진 커밋의 차이를 부모 (들) (상위 디렉토리뿐만 아니라 모든 하위 디렉토리 포함)로 가져갑니다.
+
+--no-commit-id --name-only:
+
+커밋 SHA1을 출력하지 마십시오. 전체 diff 대신 영향을받는 파일의 이름 만 출력합니다.
+
+--diff-filter=ACMRT:
+
+이 커밋에서 추가, 복사, 수정, 이름 변경 또는 유형이 변경된 파일 (예 : 파일 → 심볼릭 링크) 만 표시합니다. 삭제 된 파일은 제외됩니다.
+
+
+[2]
+git diff-tree -r --no-commit-id --name-only --diff-filter=ACMRT $commit_id | tar -czf file.tgz -T -
+git diff-tree -r --no-commit-id --name-only --diff-filter=ACMRT $commit_id | xargs tar -rf mytarfile.tar
+
+[3]
+다음은 Windows 7에서 작동하는 한 줄 명령입니다. 저장소의 최상위 폴더에서 실행하십시오.
+for / f “usebackq tokens = *”% A in (`git diff-tree -r –no-commit-id –name-only –diff-filter = ACMRT HEAD ~ 1 HEAD`) do echo FA | xcopy “% ~ fA” “C : \ git_changed_files \ % A”
+
+echo FA 는 파일을 복사하는지 디렉토리 (파일)를 복사하는지에 대한 불가피한 xcopy 질문과 파일 덮어 쓰기 (모두 덮어 쓰기)에 대한 가능한 질문에 답합니다.
+usebackq 를 사용하면 git 명령의 출력을 do 절의 입력으로 사용할 수 있습니다.
+HEAD ~ 1 HEAD 는 이전 커밋과 현재 HEAD의 모든 차이점을 가져옵니다.
+% ~ fA 는 git 출력을 정규화 된 경로로 변환합니다 (슬래시를 백 슬래시로 변경해야 함).
+C : \ git_changed_files \ 는 다른 모든 파일을 찾을 수있는 곳입니다.
+
+커밋 해시가 예를 들어 a9359f9 인 경우이 명령은 다음과 같습니다.
+
+git archive -o patch.zip a9359f9 $(git diff --name-only a9359f9^..a9359f9)
+
+프로젝트 디렉토리 구조는 그대로 유지하면서 커밋에서 수정 된 파일을 추출하여 patch.zip에 배치합니다.
